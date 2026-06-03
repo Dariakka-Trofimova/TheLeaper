@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Прыгун</title>
+    <link rel="stylesheet" href="mystyle.css">
+    <script src="scriptfile.js"></script>
+</head>
+<body>
+    <div id="mainMenu" class="main-menu">
+        <div class="menu-container">
+            <h1 class="game-title">🏆 ПРЫГУН 🏆</h1>
+            <p class="game-subtitle">Будь ещё лучше, чем вчера</p>
+            <div class="input-group">
+                <label for="playerName">👤 Имя игрока:</label>
+                <input type="text" id="playerName" class="name-input" placeholder="Введите ваше имя" maxlength="16">
+            </div>
+            
+            <div class="skin-selection">
+                <label class="skin-label">🎨 Выбери прыгуна:</label>
+                <div class="skin-container">
+                    <div class="skin-card" data-skin="default">
+                        <div class="skin-emoji">😀</div>
+                        <div class="skin-name">Классик</div>
+                        <div class="skin-status unlocked">доступен</div>
+                    </div>
+                    <div class="skin-card locked" data-skin="ninja">
+                        <div class="skin-emoji">🥷</div>
+                        <div class="skin-name">Ниндзя</div>
+                        <div class="skin-status locked-status">🔒 300 очков</div>
+                    </div>
+                    <div class="skin-card locked" data-skin="wizard">
+                        <div class="skin-emoji">🧙</div>
+                        <div class="skin-name">Волшебник</div>
+                        <div class="skin-status locked-status">🔒 500 очков</div>
+                    </div>
+                    <div class="skin-card locked" data-skin="robot">
+                        <div class="skin-emoji">🤖</div>
+                        <div class="skin-name">Робот</div>
+                        <div class="skin-status locked-status">🔒 800 очков</div>
+                    </div>
+                    <div class="skin-card locked" data-skin="ghost">
+                        <div class="skin-emoji">👻</div>
+                        <div class="skin-name">Призрак</div>
+                        <div class="skin-status locked-status">🔒 1200 очков</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="startGameBtn" class="menu-start-btn">▶ НАЧАТЬ ИГРУ</button>
+            
+            <div class="menu-info">
+                <p>🎮 Управление: ← → или A/D</p>
+                <p>💀 Красные платформы = смерть!</p>
+                <p>⭐ Получай как можно больше очков и разблокируй новых прыгунов!</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameScreen" class="game-screen hidden">
+        <div class="game-wrapper">
+            <div class="game-container">
+                <canvas id="gameCanvas"></canvas>
+                
+                <div class="game-stats">
+                    <div class="stat-item">🎯 Счёт: <span id="currentScore">0</span></div>
+                    <div class="stat-item">🏆 Рекорд: <span id="bestScore">0</span></div>
+                    <div class="stat-item">👤 <span id="currentPlayerName">Игрок</span></div>
+                </div>
+                
+                <div id="gameOverlay" class="game-overlay hidden">
+                    <div class="gameover-popup">
+                        <h2>💀 GAME OVER 💀</h2>
+                        <p>Ваш счёт: <span id="finalScore">0</span></p>
+                        <button id="retryBtn" class="overlay-btn retry">🔄 Попробовать заново</button>
+                        <button id="exitToMenuBtn" class="overlay-btn exit">🏠 Выйти в меню</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
