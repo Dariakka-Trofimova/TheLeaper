@@ -16,40 +16,7 @@
                 <label for="playerName">👤 Имя игрока:</label>
                 <input type="text" id="playerName" class="name-input" placeholder="Введите ваше имя" maxlength="16">
             </div>
-            
-            <div class="skin-selection">
-                <label class="skin-label">🎨 Выбери прыгуна:</label>
-                <div class="skin-container">
-                    <div class="skin-card" data-skin="default">
-                        <div class="skin-emoji">😀</div>
-                        <div class="skin-name">Классик</div>
-                        <div class="skin-status unlocked">доступен</div>
-                    </div>
-                    <div class="skin-card locked" data-skin="ninja">
-                        <div class="skin-emoji">🥷</div>
-                        <div class="skin-name">Ниндзя</div>
-                        <div class="skin-status locked-status">🔒 300 очков</div>
-                    </div>
-                    <div class="skin-card locked" data-skin="wizard">
-                        <div class="skin-emoji">🧙</div>
-                        <div class="skin-name">Волшебник</div>
-                        <div class="skin-status locked-status">🔒 500 очков</div>
-                    </div>
-                    <div class="skin-card locked" data-skin="robot">
-                        <div class="skin-emoji">🤖</div>
-                        <div class="skin-name">Робот</div>
-                        <div class="skin-status locked-status">🔒 800 очков</div>
-                    </div>
-                    <div class="skin-card locked" data-skin="ghost">
-                        <div class="skin-emoji">👻</div>
-                        <div class="skin-name">Призрак</div>
-                        <div class="skin-status locked-status">🔒 1200 очков</div>
-                    </div>
-                </div>
-            </div>
-            
             <button id="startGameBtn" class="menu-start-btn">▶ НАЧАТЬ ИГРУ</button>
-            
             <div class="menu-info">
                 <p>🎮 Управление: ← → или A/D</p>
                 <p>💀 Красные платформы = смерть!</p>
@@ -57,7 +24,22 @@
             </div>
         </div>
     </div>
+    <div class="skin-selection" id="skinSelection">
+        <button id="skin-label"><img src="losyash.png" alt="выбор прыгуна"></button>
+    </div>
 
+    <!-- МОДАЛЬНОЕ ОКНО ВЫБОРА СКИНА -->
+    <div id="skinModal" class="skin-modal hidden">
+        <div class="skin-modal-content">
+            <div class="skin-modal-header">
+                <h2>🎨 ВЫБОР ПРЫГУНА</h2>
+                <button id="closeSkinModal" class="close-modal">&times;</button>
+            </div>
+            <div id="skinsContainer" class="skins-container"></div>
+        </div>
+    </div>
+    
+    <!-- ИГРОВОЙ ЭКРАН -->
     <div id="gameScreen" class="game-screen hidden">
         <div class="game-wrapper">
             <div class="game-container">
