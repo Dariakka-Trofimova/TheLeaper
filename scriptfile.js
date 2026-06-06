@@ -21,11 +21,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeSkinModalBtn = document.getElementById('closeSkinModal');
     const skinLabelBtn = document.getElementById('skin-label');
     
-    // Элементы рейтинга
     const ratingModal = document.getElementById('ratingModal');
     const closeRatingModalBtn = document.getElementById('closeRatingModal');
     const ratingLabelBtn = document.getElementById('rating-label');
     const ratingContainer = document.getElementById('ratingContainer');
+    
+    const pauseBtn = document.getElementById('pauseBtn');
+    const pauseModal = document.getElementById('pauseModal');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const exitToMenuFromPauseBtn = document.getElementById('exitToMenuFromPauseBtn');
     
     let currentSkin = 'default';
     let currentPlayer = 'Гость';
@@ -33,9 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let playerRecords = [];
     let canvas, ctx;
     let gameRunning = true;
+    let isPaused = false;
     let animationId = null;
     let countdownActive = false;
     let countdownValue = 3;
+    let countdownInterval = null;
     
     let VIEWPORT_W = 500;
     let VIEWPORT_H = 700;
@@ -68,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let leftPressed = false;
     let rightPressed = false;
     
-    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
     function saveGameData() {
         localStorage.setItem('jumpBestScore', bestScore);
         localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
@@ -137,7 +142,36 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // ========== ФУНКЦИИ РЕЙТИНГА ==========
+    function pauseGame() {
+        if (gameRunning && !countdownActive && !isPaused) {
+            isPaused = true;
+            gameRunning = false;
+            if (pauseModal) {
+                pauseModal.classList.remove('hidden');
+            }
+        }
+    }
+    
+    function resumeGame() {
+        if (pauseModal) {
+            pauseModal.classList.add('hidden');
+        }
+        isPaused = false;
+        gameRunning = true;
+        countdownActive = false;
+    }
+    
+    function exitToMenuFromPause() {
+        if (pauseModal) {
+            pauseModal.classList.add('hidden');
+        }
+        isPaused = false;
+        gameRunning = true;
+        countdownActive = false;
+        if (countdownInterval) clearInterval(countdownInterval);
+        showMainMenu();
+    }
+    
     function showRatingModal() {
         if (ratingModal) {
             updateRatingDisplay();
@@ -154,7 +188,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateRatingDisplay() {
         if (!ratingContainer) return;
         
-        // Получаем записи текущего игрока и сортируем по убыванию очков
         const playerRecordsFiltered = playerRecords.filter(record => record.name === currentPlayer);
         const sortedRecords = [...playerRecordsFiltered].sort((a, b) => b.score - a.score).slice(0, 5);
         
@@ -164,7 +197,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         ratingContainer.innerHTML = sortedRecords.map((record, idx) => {
-            // Форматирование даты
             let dateStr = 'Недавно';
             if (record.date) {
                 const date = new Date(record.date);
@@ -177,7 +209,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
             
-            // Медальки для топ-3
             let rankDisplay = '';
             if (idx === 0) rankDisplay = '🥇';
             else if (idx === 1) rankDisplay = '🥈';
@@ -198,7 +229,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }).join('');
     }
     
-    // ========== КАМЕРА ==========
     function updateCamera() {
         let targetCameraY = player.y + player.height/2 - VIEWPORT_H * 0.35;
         let targetCameraX = player.x + player.width/2 - VIEWPORT_W/2;
@@ -549,25 +579,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function startCountdown() {
+    function startGame() {
+        gameRunning = false;
         countdownActive = true;
         countdownValue = 3;
-        gameRunning = false;
         
-        const countdownInterval = setInterval(() => {
+        if (countdownInterval) clearInterval(countdownInterval);
+        
+        countdownInterval = setInterval(() => {
             countdownValue--;
             
             if (countdownValue < 0) {
                 clearInterval(countdownInterval);
+                countdownInterval = null;
                 countdownActive = false;
                 gameRunning = true;
-                resetGame();
+                isPaused = false;
             }
         }, 1000);
     }
     
-    function resetGame() {
-        gameRunning = true;
+    function fullReset() {
+        gameRunning = false;
+        isPaused = false;
         score = 0;
         passedPlatforms.clear();
         document.getElementById('currentScore').innerText = '0';
@@ -586,10 +620,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (gameOverlay) {
             gameOverlay.classList.add('hidden');
         }
+        
+        startGame();
+    }
+    
+    function continueFromPause() {
+        if (pauseModal) {
+            pauseModal.classList.add('hidden');
+        }
+        isPaused = false;
+        startGame();
     }
     
     function gameLoop() {
-        if (gameRunning && !countdownActive) {
+        if (gameRunning && !countdownActive && !isPaused) {
             updatePlayer();
             updateCamera();
             updatePlatforms();
@@ -630,6 +674,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
             } else if (e.key === 'ArrowRight' || e.key === 'Right' || e.key === 'd') {
                 rightPressed = true;
+                e.preventDefault();
+            } else if (e.key === 'Escape' && gameRunning && !countdownActive && !isPaused) {
+                pauseGame();
                 e.preventDefault();
             }
         });
@@ -733,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (animationId) cancelAnimationFrame(animationId);
             gameLoop();
             
-            startCountdown();
+            fullReset();
         }, 50);
     }
     
@@ -741,8 +788,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (mainMenu) mainMenu.style.display = 'flex';
         if (gameScreen) gameScreen.classList.add('hidden');
         if (animationId) cancelAnimationFrame(animationId);
+        if (countdownInterval) clearInterval(countdownInterval);
+        
         countdownActive = false;
         gameRunning = true;
+        isPaused = false;
         
         const skinSelection = document.getElementById('skinSelection');
         if (skinSelection) {
@@ -757,13 +807,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // ========== ОБРАБОТЧИКИ ==========
     if (startBtn) startBtn.addEventListener('click', showGame);
     
     if (retryBtn) {
         retryBtn.addEventListener('click', () => {
             if (gameOverlay) gameOverlay.classList.add('hidden');
-            startCountdown();
+            fullReset();
         });
     }
     
@@ -779,14 +828,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === skinModal) closeSkinModal();
     });
     
-    // Обработчики для рейтинга
     if (ratingLabelBtn) ratingLabelBtn.addEventListener('click', showRatingModal);
     if (closeRatingModalBtn) closeRatingModalBtn.addEventListener('click', closeRatingModal);
     if (ratingModal) ratingModal.addEventListener('click', (e) => {
         if (e.target === ratingModal) closeRatingModal();
     });
     
-    // ========== ЗАПУСК ==========
+    if (pauseBtn) pauseBtn.addEventListener('click', pauseGame);
+    if (resumeBtn) resumeBtn.addEventListener('click', continueFromPause);
+    if (exitToMenuFromPauseBtn) exitToMenuFromPauseBtn.addEventListener('click', exitToMenuFromPause);
+    if (pauseModal) pauseModal.addEventListener('click', (e) => {
+        if (e.target === pauseModal) continueFromPause();
+    });
+    
     loadGameData();
     renderSkinsList();
     updateRatingDisplay();

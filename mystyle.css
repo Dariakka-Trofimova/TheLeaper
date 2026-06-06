@@ -742,3 +742,122 @@ canvas {
         font-size: 0.6rem;
     }
 }
+
+.pause-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 45px;
+    height: 45px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    border-radius: 50%;
+    color: #ffd700;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 200;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-btn:hover {
+    transform: scale(1.1);
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.pause-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3000;
+}
+
+.pause-modal.hidden {
+    display: none;
+}
+
+.pause-modal-content {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 40px 50px;
+    border-radius: 60px;
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
+    min-width: 300px;
+}
+
+.pause-modal-content h2 {
+    color: #ffd700;
+    font-size: 2rem;
+    margin-bottom: 30px;
+}
+
+.pause-btn-resume {
+    display: block;
+    width: 100%;
+    padding: 12px 25px;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pause-btn-resume:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+}
+
+.pause-btn-exit {
+    display: block;
+    width: 100%;
+    padding: 12px 25px;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pause-btn-exit:hover {
+    transform: scale(1.02);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+@media (max-width: 600px) {
+    .pause-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .pause-modal-content {
+        padding: 30px 35px;
+        min-width: 250px;
+    }
+    
+    .pause-modal-content h2 {
+        font-size: 1.5rem;
+    }
+}
