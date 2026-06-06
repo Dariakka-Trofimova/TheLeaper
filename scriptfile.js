@@ -1,10 +1,9 @@
-// ========== ИСПРАВЛЕННАЯ ВЕРСИЯ С БЕСКОНЕЧНОЙ КАМЕРОЙ ==========
 document.addEventListener('DOMContentLoaded', function() {
     const skinsData = {
         default: { name: 'Лосяш', image: 'losyash.png', unlockScore: 0 },
         pin: { name: 'Пин', image: 'pin.png', unlockScore: 300 },
         barash: { name: 'Бараш', image: 'barash.png', unlockScore: 500 },
-        carich: { name: 'Кар-Карыч', image: 'carich.png', unlockScore: 800 },
+        karich: { name: 'Кар-Карыч', image: 'karich.png', unlockScore: 800 },
         yozhik: { name: 'Ёжик', image: 'yozhik.png', unlockScore: 1200 }
     };
 
@@ -22,9 +21,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeSkinModalBtn = document.getElementById('closeSkinModal');
     const skinLabelBtn = document.getElementById('skin-label');
     
+    // Элементы рейтинга
+    const ratingModal = document.getElementById('ratingModal');
+    const closeRatingModalBtn = document.getElementById('closeRatingModal');
+    const ratingLabelBtn = document.getElementById('rating-label');
+    const ratingContainer = document.getElementById('ratingContainer');
+    
     let currentSkin = 'default';
     let currentPlayer = 'Гость';
-    let unlockedSkins = { default: true, pin: false, barash: false, carich: false, yozhik: false };
+    let unlockedSkins = { default: true, pin: false, barash: false, karich: false, yozhik: false };
     let playerRecords = [];
     let canvas, ctx;
     let gameRunning = true;
@@ -63,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let leftPressed = false;
     let rightPressed = false;
     
+    // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
     function saveGameData() {
         localStorage.setItem('jumpBestScore', bestScore);
         localStorage.setItem('unlockedSkins', JSON.stringify(unlockedSkins));
@@ -110,27 +116,101 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => toast.remove(), 2000);
     }
     
-    // ========== ИСПРАВЛЕННАЯ КАМЕРА ==========
-    function updateCamera() {
-        // Игрок должен быть на 35% от верха экрана (чуть выше центра)
-        let targetCameraY = player.y + player.height/2 - VIEWPORT_H * 0.35;
+    function getSkinEmoji(skinId) {
+        const emojis = {
+            default: '🦌',
+            pin: '🐧',
+            barash: '🐑',
+            karich: '🦉',
+            yozhik: '🦔'
+        };
+        return emojis[skinId] || '🎮';
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // ========== ФУНКЦИИ РЕЙТИНГА ==========
+    function showRatingModal() {
+        if (ratingModal) {
+            updateRatingDisplay();
+            ratingModal.classList.remove('hidden');
+        }
+    }
+    
+    function closeRatingModal() {
+        if (ratingModal) {
+            ratingModal.classList.add('hidden');
+        }
+    }
+    
+    function updateRatingDisplay() {
+        if (!ratingContainer) return;
         
-        // Игрок по центру по горизонтали
+        // Получаем записи текущего игрока и сортируем по убыванию очков
+        const playerRecordsFiltered = playerRecords.filter(record => record.name === currentPlayer);
+        const sortedRecords = [...playerRecordsFiltered].sort((a, b) => b.score - a.score).slice(0, 5);
+        
+        if (sortedRecords.length === 0) {
+            ratingContainer.innerHTML = '<div class="empty-rating">😢 Нет сохранённых результатов<br>Сыграйте, чтобы появились рекорды!</div>';
+            return;
+        }
+        
+        ratingContainer.innerHTML = sortedRecords.map((record, idx) => {
+            // Форматирование даты
+            let dateStr = 'Недавно';
+            if (record.date) {
+                const date = new Date(record.date);
+                dateStr = date.toLocaleDateString('ru-RU', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            
+            // Медальки для топ-3
+            let rankDisplay = '';
+            if (idx === 0) rankDisplay = '🥇';
+            else if (idx === 1) rankDisplay = '🥈';
+            else if (idx === 2) rankDisplay = '🥉';
+            else rankDisplay = `${idx + 1}`;
+            
+            return `
+                <div class="rating-record">
+                    <div class="record-rank">${rankDisplay}</div>
+                    <div class="record-info">
+                        <div class="record-score">${record.score} очков</div>
+                        <div class="record-player">👤 ${escapeHtml(record.name)}</div>
+                        <div class="record-date">📅 ${dateStr}</div>
+                    </div>
+                    <div class="record-skin">${getSkinEmoji(record.skin)}</div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // ========== КАМЕРА ==========
+    function updateCamera() {
+        let targetCameraY = player.y + player.height/2 - VIEWPORT_H * 0.35;
         let targetCameraX = player.x + player.width/2 - VIEWPORT_W/2;
         
-        // Плавное движение камеры
         cameraX = cameraX + (targetCameraX - cameraX) * 0.12;
         cameraY = cameraY + (targetCameraY - cameraY) * 0.12;
         
-        // Только горизонтальные границы
         if (cameraX < 0) cameraX = 0;
         if (cameraX > WORLD_WIDTH - VIEWPORT_W) cameraX = WORLD_WIDTH - VIEWPORT_W;
-        
-        // НЕТ ВЕРТИКАЛЬНЫХ ГРАНИЦ! Камера может уходить в минус бесконечно
     }
     
     function drawBackground() {
-        // Фон двигается вместе с камерой (создаёт эффект бесконечности)
         let hue1 = (180 + Math.abs(cameraY) * 0.03) % 360;
         let hue2 = (260 + Math.abs(cameraY) * 0.05) % 360;
         const grad = ctx.createLinearGradient(0, 0, 0, VIEWPORT_H);
@@ -233,7 +313,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function updatePlatforms() {
         if (!gameRunning) return;
         
-        // Удаляем платформы, которые слишком далеко внизу
         platforms = platforms.filter(p => p.y + p.h > cameraY - 600);
         
         let highestY = Math.min(...platforms.map(p => p.y));
@@ -360,10 +439,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (score > 0) {
-            playerRecords.push({ name: currentPlayer, score: score, skin: currentSkin, date: Date.now() });
+            playerRecords.push({ 
+                name: currentPlayer, 
+                score: score, 
+                skin: currentSkin, 
+                date: Date.now()
+            });
             playerRecords.sort((a,b) => b.score - a.score);
             playerRecords = playerRecords.slice(0, 10);
             saveGameData();
+            updateRatingDisplay();
         }
     }
     
@@ -632,6 +717,12 @@ document.addEventListener('DOMContentLoaded', function() {
             skinSelection.style.visibility = 'hidden';
         }
         
+        const ratingSelection = document.querySelector('.rating-selection');
+        if (ratingSelection) {
+            ratingSelection.style.opacity = '0';
+            ratingSelection.style.visibility = 'hidden';
+        }
+        
         currentPlayer = playerNameInput ? (playerNameInput.value.trim() || 'Гость') : 'Гость';
         if (currentPlayerNameSpan) currentPlayerNameSpan.innerText = currentPlayer;
         
@@ -658,8 +749,15 @@ document.addEventListener('DOMContentLoaded', function() {
             skinSelection.style.opacity = '1';
             skinSelection.style.visibility = 'visible';
         }
+        
+        const ratingSelection = document.querySelector('.rating-selection');
+        if (ratingSelection) {
+            ratingSelection.style.opacity = '1';
+            ratingSelection.style.visibility = 'visible';
+        }
     }
     
+    // ========== ОБРАБОТЧИКИ ==========
     if (startBtn) startBtn.addEventListener('click', showGame);
     
     if (retryBtn) {
@@ -681,6 +779,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target === skinModal) closeSkinModal();
     });
     
+    // Обработчики для рейтинга
+    if (ratingLabelBtn) ratingLabelBtn.addEventListener('click', showRatingModal);
+    if (closeRatingModalBtn) closeRatingModalBtn.addEventListener('click', closeRatingModal);
+    if (ratingModal) ratingModal.addEventListener('click', (e) => {
+        if (e.target === ratingModal) closeRatingModal();
+    });
+    
+    // ========== ЗАПУСК ==========
     loadGameData();
     renderSkinsList();
+    updateRatingDisplay();
 });
