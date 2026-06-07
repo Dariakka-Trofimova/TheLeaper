@@ -42,6 +42,7 @@
     </div>
 
     <button class="theme-toggle" id="themeToggle">🌙</button>
+    <button class="pause-btn" id="pauseBtn">⏸</button>
 
     <div class="modal modal--hidden" id="skinModal">
         <div class="modal__content">
@@ -68,15 +69,13 @@
     <div class="game-screen game-screen--hidden" id="gameScreen">
         <div class="game-screen__wrapper">
             <div class="game-screen__container">
-                <button class="pause-btn" id="pauseBtn">⏸</button>
                 <canvas class="game-screen__canvas" id="gameCanvas"></canvas>
                 
                 <div class="game-stats">
                     <div class="game-stats__item">🎯 Счёт: <span id="currentScore">0</span></div>
                     <div class="game-stats__item">🏆 Рекорд: <span id="bestScore">0</span></div>
                     <div class="game-stats__item">👤 <span id="currentPlayerName">Игрок</span></div>
-                </div>
-                
+                </div>   
                 <div class="game-overlay game-overlay--hidden" id="gameOverlay">
                     <div class="game-overlay__popup">
                         <h2 class="game-overlay__title">💀 GAME OVER 💀</h2>
