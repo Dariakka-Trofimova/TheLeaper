@@ -83,7 +83,7 @@
     }
     
     .pause-btn {
-        top: 10px;
+        top: 55px;
         right: 10px;
         width: 35px;
         height: 35px;
@@ -112,7 +112,6 @@
     .rating__date {
         font-size: 0.6rem;
     }
-    
     
     .pause-modal__content {
         padding: 30px 35px;
@@ -790,24 +789,17 @@ body.light-theme {
     margin-bottom: 30px;
 }
 
-.pause-btn {
-    position: fixed;
-    top: 75px;
-    right: 20px;
-    width: 45px;
-    height: 45px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border: 2px solid rgba(255, 215, 0, 0.6);
-    border-radius: 50%;
-    color: #ffd700;
-    font-size: 1.5rem;
+.pause-modal__btn {
+    display: block;
+    width: 100%;
+    padding: 12px 25px;
+    margin-bottom: 15px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
     cursor: pointer;
-    z-index: 1001;
     transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .pause-modal__btn--resume {
@@ -849,11 +841,13 @@ body.light-theme {
     align-items: center;
     justify-content: center;
 }
+
 .pause-btn:hover {
     transform: scale(1.1);
     background: rgba(0, 0, 0, 0.8);
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
+
 .game-overlay {
     position: absolute;
     top: 0;
