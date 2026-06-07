@@ -83,7 +83,7 @@
     }
     
     .pause-btn {
-        top: 55px;
+        top: 10px;
         right: 10px;
         width: 35px;
         height: 35px;
@@ -849,13 +849,11 @@ body.light-theme {
     align-items: center;
     justify-content: center;
 }
-
 .pause-btn:hover {
     transform: scale(1.1);
     background: rgba(0, 0, 0, 0.8);
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
-
 .game-overlay {
     position: absolute;
     top: 0;
