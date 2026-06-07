@@ -1,0 +1,27 @@
+{
+    "default": {
+        "name": "Лосяш",
+        "image": "losyash.png",
+        "unlockScore": 0
+    },
+    "pin": {
+        "name": "Пин",
+        "image": "pin.png",
+        "unlockScore": 300
+    },
+    "barash": {
+        "name": "Бараш",
+        "image": "barash.png",
+        "unlockScore": 500
+    },
+    "karich": {
+        "name": "Кар-Карыч",
+        "image": "karich.png",
+        "unlockScore": 800
+    },
+    "yozhik": {
+        "name": "Ёжик",
+        "image": "yozhik.png",
+        "unlockScore": 1200
+    }
+}

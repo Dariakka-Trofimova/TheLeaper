@@ -4,81 +4,96 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Прыгун</title>
-    <link rel="stylesheet" href="mystyle.css">
-    <script src="scriptfile.js"></script>
+    <link rel="stylesheet" href="css/mystyle.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="js/scriptfile.js"></script>
 </head>
 <body>
-    <div id="mainMenu" class="main-menu">
-        <div class="menu-container">
-            <h1 class="game-title">🏆 ПРЫГУН 🏆</h1>
-            <p class="game-subtitle">Будь ещё лучше, чем вчера</p>
-            <div class="input-group">
-                <label for="playerName">👤 Имя игрока:</label>
-                <input type="text" id="playerName" class="name-input" placeholder="Введите ваше имя" maxlength="16">
+    <div class="menu" id="mainMenu">
+        <div class="menu__container">
+            <h1 class="menu__title">🏆 ПРЫГУН 🏆</h1>
+            <p class="menu__subtitle">Будь ещё лучше, чем вчера</p>
+            
+            <div class="menu__input-group">
+                <label class="menu__label" for="playerName">👤 Имя игрока:</label>
+                <input type="text" id="playerName" class="menu__input" placeholder="Введите ваше имя" maxlength="16">
             </div>
-            <button id="startGameBtn" class="menu-start-btn">▶ НАЧАТЬ ИГРУ</button>
-            <div class="menu-info">
-                <p>🎮 Управление: ← → или A/D</p>
-                <p>💀 Красные платформы = смерть!</p>
-                <p>⭐ Получай как можно больше очков и разблокируй новых прыгунов!</p>
+            
+            <button id="startGameBtn" class="menu__start-btn">▶ НАЧАТЬ ИГРУ</button>
+            
+            <div class="menu__info">
+                <p class="menu__info-text">🎮 Управление: ← → или A/D</p>
+                <p class="menu__info-text">💀 Красные платформы = смерть!</p>
+                <p class="menu__info-text">⭐ Получай как можно больше очков и разблокируй новых прыгунов!</p>
             </div>
         </div>
-    </div>
-    <div class="skin-selection" id="skinSelection">
-        <button id="skin-label"><img src="losyash.png" alt="выбор прыгуна"></button>
     </div>
 
-    <div id="skinModal" class="skin-modal hidden">
-        <div class="skin-modal-content">
-            <div class="skin-modal-header">
-                <h2>🎨 ВЫБОР ПРЫГУНА</h2>
-                <button id="closeSkinModal" class="close-modal">&times;</button>
-            </div>
-            <div id="skinsContainer" class="skins-container"></div>
-        </div>
+    <div class="skin-selector" id="skinSelector">
+        <button class="skin-selector__btn" id="skin-label">
+            <img class="skin-selector__image" src="images/losyash.png" alt="выбор прыгуна">
+        </button>
     </div>
-<div class="rating-selection">
-    <button id="rating-label" class="rating-btn">
-        <img src="rating_icon.png" alt="рейтинг">
-    </button>
-</div>
 
-<div id="ratingModal" class="rating-modal hidden">
-    <div class="rating-modal-content">
-        <div class="rating-modal-header">
-            <h2>🏆 ИСТОРИЯ РЕКОРДОВ</h2>
-            <button id="closeRatingModal" class="close-modal">&times;</button>
-        </div>
-        <div id="ratingContainer" class="rating-container">
+    <div class="rating-selector" id="ratingSelector">
+        <button class="rating-selector__btn" id="rating-label">
+            <img class="rating-selector__image" src="images/rating_icon.png" alt="рейтинг">
+        </button>
+    </div>
+
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+
+    <div class="modal modal--hidden" id="skinModal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">🎨 ВЫБОР ПРЫГУНА</h2>
+                <button class="modal__close" id="closeSkinModal">&times;</button>
+            </div>
+            <div class="skins" id="skinsContainer"></div>
         </div>
     </div>
-</div>
-<button id="themeToggle" class="theme-toggle-btn">🌙</button>
-    <div id="gameScreen" class="game-screen hidden">
-        <div class="game-wrapper">
-            <div class="game-container">
-                <canvas id="gameCanvas"></canvas>
+
+    <div class="modal modal--hidden" id="ratingModal">
+        <div class="modal__content">
+            <div class="modal__header">
+                <h2 class="modal__title">🏆 ИСТОРИЯ РЕКОРДОВ</h2>
+                <button class="modal__close" id="closeRatingModal">&times;</button>
+            </div>
+            <div class="rating" id="ratingContainer">
+                <div class="rating__empty">Нет результатов</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-screen game-screen--hidden" id="gameScreen">
+        <div class="game-screen__wrapper">
+            <div class="game-screen__container">
+                <button class="pause-btn" id="pauseBtn">⏸</button>
+                <canvas class="game-screen__canvas" id="gameCanvas"></canvas>
                 
                 <div class="game-stats">
-                    <div class="stat-item">🎯 Счёт: <span id="currentScore">0</span></div>
-                    <div class="stat-item">🏆 Рекорд: <span id="bestScore">0</span></div>
-                    <div class="stat-item">👤 <span id="currentPlayerName">Игрок</span></div>
+                    <div class="game-stats__item">🎯 Счёт: <span id="currentScore">0</span></div>
+                    <div class="game-stats__item">🏆 Рекорд: <span id="bestScore">0</span></div>
+                    <div class="game-stats__item">👤 <span id="currentPlayerName">Игрок</span></div>
                 </div>
                 
-                <div id="gameOverlay" class="game-overlay hidden">
-                    <div class="gameover-popup">
-                        <h2>💀 GAME OVER 💀</h2>
-                        <p>Ваш счёт: <span id="finalScore">0</span></p>
-                        <button id="retryBtn" class="overlay-btn retry">🔄 Попробовать заново</button>
-                        <button id="exitToMenuBtn" class="overlay-btn exit">🏠 Выйти в меню</button>
+                <div class="game-overlay game-overlay--hidden" id="gameOverlay">
+                    <div class="game-overlay__popup">
+                        <h2 class="game-overlay__title">💀 GAME OVER 💀</h2>
+                        <p class="game-overlay__score">Ваш счёт: <span id="finalScore">0</span></p>
+                        <div class="game-overlay__joke" id="gameOverJoke">
+                            <p class="game-overlay__joke-text">😂 Загрузка шутки...</p>
+                        </div>
+                        <button class="game-overlay__btn game-overlay__btn--retry" id="retryBtn">🔄 Попробовать заново</button>
+                        <button class="game-overlay__btn game-overlay__btn--exit" id="exitToMenuBtn">🏠 Выйти в меню</button>
                     </div>
                 </div>
-                 <button id="pauseBtn" class="pause-btn">⏸</button>
-                <div id="pauseModal" class="pause-modal hidden">
-                    <div class="pause-modal-content">
-                        <h2>⏸ ПАУЗА</h2>
-                        <button id="resumeBtn" class="pause-btn-resume">▶ Продолжить игру</button>
-                        <button id="exitToMenuFromPauseBtn" class="pause-btn-exit">🏠 Выйти в меню</button>
+                
+                <div class="pause-modal pause-modal--hidden" id="pauseModal">
+                    <div class="pause-modal__content">
+                        <h2 class="pause-modal__title">⏸ ПАУЗА</h2>
+                        <button class="pause-modal__btn pause-modal__btn--resume" id="resumeBtn">▶ Продолжить игру</button>
+                        <button class="pause-modal__btn pause-modal__btn--exit" id="exitToMenuFromPauseBtn">🏠 Выйти в меню</button>
                     </div>
                 </div>
             </div>

@@ -1,12 +1,86 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const skinsData = {
-        default: { name: 'Лосяш', image: 'losyash.png', unlockScore: 0 },
-        pin: { name: 'Пин', image: 'pin.png', unlockScore: 300 },
-        barash: { name: 'Бараш', image: 'barash.png', unlockScore: 500 },
-        karich: { name: 'Кар-Карыч', image: 'karich.png', unlockScore: 800 },
-        yozhik: { name: 'Ёжик', image: 'yozhik.png', unlockScore: 1200 }
-    };
+    class ScoreManager {
+        constructor() {
+            this.score = 0;
+            this.bestScore = 0;
+            this.playerRecords = [];
+            this.currentPlayer = 'Гость';
+        }
+        
+        addPoints(points) {
+            this.score += points;
+            return this.score;
+        }
+        
+        reset() {
+            this.score = 0;
+        }
+        
+        getScore() {
+            return this.score;
+        }
+        
+        getBestScore() {
+            return this.bestScore;
+        }
+        
+        isNewRecord() {
+            return this.score > this.bestScore;
+        }
+        
+        updateBestScore() {
+            if (this.score > this.bestScore) {
+                this.bestScore = this.score;
+                return true;
+            }
+            return false;
+        }
+        
+        saveRecord(skin) {
+            this.playerRecords.push({
+                name: this.currentPlayer,
+                score: this.score,
+                skin: skin,
+                date: Date.now()
+            });
+            this.playerRecords.sort((a, b) => b.score - a.score);
+            this.playerRecords = this.playerRecords.slice(0, 10);
+        }
+        
+        getTopRecords(limit = 5) {
+            return this.playerRecords.filter(r => r.name === this.currentPlayer).slice(0, limit);
+        }
+        
+        loadFromStorage() {
+            const storedBest = localStorage.getItem('jumpBestScore');
+            if (storedBest) this.bestScore = parseInt(storedBest) || 0;
+            
+            const storedRecords = localStorage.getItem('playerRecords');
+            if (storedRecords) {
+                try {
+                    this.playerRecords = JSON.parse(storedRecords);
+                } catch(e) {}
+            }
+        }
+        
+        saveToStorage() {
+            localStorage.setItem('jumpBestScore', this.bestScore);
+            localStorage.setItem('playerRecords', JSON.stringify(this.playerRecords));
+        }
+        
+        setCurrentPlayer(name) {
+            this.currentPlayer = name || 'Гость';
+        }
+        
+        getCurrentPlayer() {
+            return this.currentPlayer;
+        }
+    }
 
+    const scoreManager = new ScoreManager();
+    
+    let skinsData = {};
+    
     const mainMenu = document.getElementById('mainMenu');
     const gameScreen = document.getElementById('gameScreen');
     const startBtn = document.getElementById('startGameBtn');
@@ -30,6 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pauseModal = document.getElementById('pauseModal');
     const resumeBtn = document.getElementById('resumeBtn');
     const exitToMenuFromPauseBtn = document.getElementById('exitToMenuFromPauseBtn');
+    const themeToggle = document.getElementById('themeToggle');
     
     let currentSkin = 'default';
     let currentPlayer = 'Гость';
@@ -66,8 +141,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let cameraX = 0;
     let cameraY = 0;
     
-    const GRAVITY = 0.18;
-    const JUMP_POWER = -10.5;
+    const GRAVITY = 0.22;
+    const JUMP_POWER = -12.5;
     const MOVE_SPEED = 5.2;
     const MAX_JUMP_HEIGHT = 230;
     
@@ -109,14 +184,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (savedSkin && unlockedSkins[savedSkin]) {
             currentSkin = savedSkin;
             const skinImg = skinLabelBtn?.querySelector('img');
-            if (skinImg && skinsData[currentSkin]) skinImg.src = skinsData[currentSkin].image;
+            if (skinImg && skinsData[currentSkin]) skinImg.src = `images/${skinsData[currentSkin].image}`;
         }
     }
     
     function showMessage(msg) {
         const toast = document.createElement('div');
+        toast.className = 'toast';
         toast.textContent = msg;
-        toast.style.cssText = `position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#ffcc44; color:black; padding:12px 24px; border-radius:50px; font-weight:bold; z-index:3000; animation:fadeOut 2s ease forwards;`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 2000);
     }
@@ -142,19 +217,47 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    async function translateText(text) {
+        try {
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ru`);
+            const data = await response.json();
+            return data.responseData.translatedText || text;
+        } catch (error) {
+            return text;
+        }
+    }
+    
+    async function fetchJoke() {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const response = await fetch('https://v2.jokeapi.dev/joke/Any?type=single', { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (!response.ok) throw new Error('Ошибка загрузки');
+            const data = await response.json();
+            if (data.joke) {
+                const translatedJoke = await translateText(data.joke);
+                return translatedJoke;
+            }
+            return '😂 Шутка временно недоступна';
+        } catch (error) {
+            return '😄 Не удалось загрузить шутку';
+        }
+    }
+    
     function pauseGame() {
         if (gameRunning && !countdownActive && !isPaused) {
             isPaused = true;
             gameRunning = false;
             if (pauseModal) {
-                pauseModal.classList.remove('hidden');
+                pauseModal.classList.remove('pause-modal--hidden');
             }
         }
     }
     
     function resumeGame() {
         if (pauseModal) {
-            pauseModal.classList.add('hidden');
+            pauseModal.classList.add('pause-modal--hidden');
         }
         isPaused = false;
         gameRunning = true;
@@ -163,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function exitToMenuFromPause() {
         if (pauseModal) {
-            pauseModal.classList.add('hidden');
+            pauseModal.classList.add('pause-modal--hidden');
         }
         isPaused = false;
         gameRunning = true;
@@ -175,13 +278,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function showRatingModal() {
         if (ratingModal) {
             updateRatingDisplay();
-            ratingModal.classList.remove('hidden');
+            ratingModal.classList.remove('modal--hidden');
         }
     }
     
     function closeRatingModal() {
         if (ratingModal) {
-            ratingModal.classList.add('hidden');
+            ratingModal.classList.add('modal--hidden');
         }
     }
     
@@ -192,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const sortedRecords = [...playerRecordsFiltered].sort((a, b) => b.score - a.score).slice(0, 5);
         
         if (sortedRecords.length === 0) {
-            ratingContainer.innerHTML = '<div class="empty-rating">😢 Нет сохранённых результатов<br>Сыграйте, чтобы появились рекорды!</div>';
+            ratingContainer.innerHTML = '<div class="rating__empty">😢 Нет сохранённых результатов<br>Сыграйте, чтобы появились рекорды!</div>';
             return;
         }
         
@@ -216,14 +319,14 @@ document.addEventListener('DOMContentLoaded', function() {
             else rankDisplay = `${idx + 1}`;
             
             return `
-                <div class="rating-record">
-                    <div class="record-rank">${rankDisplay}</div>
-                    <div class="record-info">
-                        <div class="record-score">${record.score} очков</div>
-                        <div class="record-player">👤 ${escapeHtml(record.name)}</div>
-                        <div class="record-date">📅 ${dateStr}</div>
+                <div class="rating__record">
+                    <div class="rating__rank">${rankDisplay}</div>
+                    <div class="rating__info">
+                        <div class="rating__score">${record.score} очков</div>
+                        <div class="rating__player">👤 ${escapeHtml(record.name)}</div>
+                        <div class="rating__date">📅 ${dateStr}</div>
                     </div>
-                    <div class="record-skin">${getSkinEmoji(record.skin)}</div>
+                    <div class="rating__skin">${getSkinEmoji(record.skin)}</div>
                 </div>
             `;
         }).join('');
@@ -404,6 +507,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 player.x < plat.x + plat.w) {
                 
                 if (plat.dangerous) {
+                    if (typeof gsap !== 'undefined') {
+                        gsap.to('.game-screen__container', {
+                            x: 10,
+                            duration: 0.08,
+                            repeat: 5,
+                            yoyo: true,
+                            ease: "power1.inOut"
+                        });
+                    }
                     gameRunning = false;
                     showGameOver();
                     return;
@@ -415,8 +527,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!plat.counted && !passedPlatforms.has(plat.id)) {
                     plat.counted = true;
                     passedPlatforms.add(plat.id);
-                    score += 20;
+                    score = scoreManager.addPoints(20);
                     document.getElementById('currentScore').innerText = score;
+                    
+                    if (typeof gsap !== 'undefined') {
+                        gsap.fromTo('.game-stats__item:first-child',
+                            { scale: 1, color: '#ffec80' },
+                            { scale: 1.3, color: '#ffd700', duration: 0.2, yoyo: true, repeat: 1 }
+                        );
+                    }
                     
                     for (const [skinId, skin] of Object.entries(skinsData)) {
                         if (!unlockedSkins[skinId] && score >= skin.unlockScore) {
@@ -429,7 +548,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (score > bestScore) {
                         bestScore = score;
+                        scoreManager.updateBestScore();
+                        scoreManager.saveToStorage();
                         document.getElementById('bestScore').innerText = bestScore;
+                        
+                        if (typeof gsap !== 'undefined') {
+                            gsap.fromTo('.game-stats__item:nth-child(2)',
+                                { scale: 1, color: '#ffec80' },
+                                { scale: 1.3, color: '#ffd700', duration: 0.3, yoyo: true, repeat: 2 }
+                            );
+                        }
+                        
                         saveGameData();
                     }
                 }
@@ -459,24 +588,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function showGameOver() {
+    async function showGameOver() {
         if (finalScoreSpan) {
             finalScoreSpan.innerText = score;
         }
         
         if (gameOverlay) {
-            gameOverlay.classList.remove('hidden');
+            gameOverlay.classList.remove('game-overlay--hidden');
+            
+            if (typeof gsap !== 'undefined') {
+                const popup = document.querySelector('.game-overlay__popup');
+                if (popup) {
+                    gsap.fromTo(popup, 
+                        { scale: 0, opacity: 0, rotation: -10 },
+                        { scale: 1, opacity: 1, rotation: 0, duration: 0.4, ease: "back.out(1.2)" }
+                    );
+                }
+            }
+            
+            const jokeText = document.querySelector('.game-overlay__joke-text');
+            if (jokeText) {
+                jokeText.innerHTML = '🤔 Загрузка шутки...';
+                const joke = await fetchJoke();
+                jokeText.innerHTML = `😄 ${joke}`;
+            }
         }
         
         if (score > 0) {
-            playerRecords.push({ 
-                name: currentPlayer, 
-                score: score, 
-                skin: currentSkin, 
-                date: Date.now()
-            });
-            playerRecords.sort((a,b) => b.score - a.score);
-            playerRecords = playerRecords.slice(0, 10);
+            scoreManager.saveRecord(currentSkin);
+            scoreManager.saveToStorage();
+            
+            playerRecords = scoreManager.playerRecords;
+            bestScore = scoreManager.bestScore;
+            
             saveGameData();
             updateRatingDisplay();
         }
@@ -548,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const skinData = skinsData[player.charType] || skinsData.default;
         const img = new Image();
-        img.src = skinData.image;
+        img.src = `images/${skinData.image}`;
         if (img.complete && img.naturalWidth > 0) {
             ctx.drawImage(img, playerScreenX, playerScreenY, player.width, player.height);
         } else {
@@ -603,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function() {
         gameRunning = false;
         isPaused = false;
         score = 0;
-        passedPlatforms.clear();
+        scoreManager.reset();
         document.getElementById('currentScore').innerText = '0';
         
         player.x = VIEWPORT_W/2 - 20;
@@ -618,7 +762,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initPlatforms();
         
         if (gameOverlay) {
-            gameOverlay.classList.add('hidden');
+            gameOverlay.classList.add('game-overlay--hidden');
         }
         
         startGame();
@@ -626,7 +770,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function continueFromPause() {
         if (pauseModal) {
-            pauseModal.classList.add('hidden');
+            pauseModal.classList.add('pause-modal--hidden');
         }
         isPaused = false;
         startGame();
@@ -649,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!canvas) return;
         ctx = canvas.getContext('2d');
         
-        const container = document.querySelector('.game-container');
+        const container = document.querySelector('.game-screen__container');
         if (container) {
             const width = container.clientWidth;
             const height = container.clientHeight - 55;
@@ -719,22 +863,33 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!skinsContainer) return;
         skinsContainer.innerHTML = '';
         
+        if (Object.keys(skinsData).length === 0) {
+            skinsContainer.innerHTML = '<div class="rating__empty">Загрузка данных...</div>';
+            return;
+        }
+        
         for (const [skinId, skin] of Object.entries(skinsData)) {
             const isUnlocked = unlockedSkins[skinId];
             const isSelected = currentSkin === skinId;
             const skinItem = document.createElement('div');
-            skinItem.className = `skin-item ${isUnlocked ? '' : 'locked'} ${isSelected ? 'selected' : ''}`;
+            let skinClass = 'skin';
+            if (!isUnlocked) skinClass += ' skin--locked';
+            if (isSelected && isUnlocked) skinClass += ' skin--selected';
+            skinItem.className = skinClass;
+            skinItem.dataset.skin = skinId;
             skinItem.innerHTML = `
-                <img src="${skin.image}" alt="${skin.name}" class="skin-image">
-                <div class="skin-name">${skin.name}</div>
-                <div class="skin-status">${isUnlocked ? '✓ доступен' : `🔒 ${skin.unlockScore} очков`}</div>
+                <img class="skin__image" src="images/${skin.image}" alt="${skin.name}">
+                <div class="skin__name">${skin.name}</div>
+                <div class="skin__status ${isUnlocked ? 'skin__status--unlocked' : 'skin__status--locked'}">
+                    ${isUnlocked ? '✓ доступен' : `🔒 ${skin.unlockScore} очков`}
+                </div>
             `;
             if (isUnlocked) {
                 skinItem.addEventListener('click', () => {
                     currentSkin = skinId;
                     player.charType = skinId;
                     const skinImg = skinLabelBtn?.querySelector('img');
-                    if (skinImg) skinImg.src = skin.image;
+                    if (skinImg) skinImg.src = `images/${skin.image}`;
                     renderSkinsList();
                     closeSkinModal();
                     showMessage(`✨ Выбран ${skin.name}`);
@@ -747,30 +902,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function openSkinModal() {
         renderSkinsList();
-        if (skinModal) skinModal.classList.remove('hidden');
+        if (skinModal) {
+            skinModal.classList.remove('modal--hidden');
+        }
     }
     
     function closeSkinModal() {
-        if (skinModal) skinModal.classList.add('hidden');
+        if (skinModal) {
+            skinModal.classList.add('modal--hidden');
+        }
     }
     
     function showGame() {
         if (mainMenu) mainMenu.style.display = 'none';
-        if (gameScreen) gameScreen.classList.remove('hidden');
+        if (gameScreen) gameScreen.classList.remove('game-screen--hidden');
         
-        const skinSelection = document.getElementById('skinSelection');
-        if (skinSelection) {
-            skinSelection.style.opacity = '0';
-            skinSelection.style.visibility = 'hidden';
+        const skinSelector = document.querySelector('.skin-selector');
+        if (skinSelector) {
+            skinSelector.style.opacity = '0';
+            skinSelector.style.visibility = 'hidden';
         }
         
-        const ratingSelection = document.querySelector('.rating-selection');
-        if (ratingSelection) {
-            ratingSelection.style.opacity = '0';
-            ratingSelection.style.visibility = 'hidden';
+        const ratingSelector = document.querySelector('.rating-selector');
+        if (ratingSelector) {
+            ratingSelector.style.opacity = '0';
+            ratingSelector.style.visibility = 'hidden';
         }
         
         currentPlayer = playerNameInput ? (playerNameInput.value.trim() || 'Гость') : 'Гость';
+        scoreManager.setCurrentPlayer(currentPlayer);
         if (currentPlayerNameSpan) currentPlayerNameSpan.innerText = currentPlayer;
         
         setTimeout(() => {
@@ -786,7 +946,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function showMainMenu() {
         if (mainMenu) mainMenu.style.display = 'flex';
-        if (gameScreen) gameScreen.classList.add('hidden');
+        if (gameScreen) gameScreen.classList.add('game-screen--hidden');
         if (animationId) cancelAnimationFrame(animationId);
         if (countdownInterval) clearInterval(countdownInterval);
         
@@ -794,16 +954,86 @@ document.addEventListener('DOMContentLoaded', function() {
         gameRunning = true;
         isPaused = false;
         
-        const skinSelection = document.getElementById('skinSelection');
-        if (skinSelection) {
-            skinSelection.style.opacity = '1';
-            skinSelection.style.visibility = 'visible';
+        const skinSelector = document.querySelector('.skin-selector');
+        if (skinSelector) {
+            skinSelector.style.opacity = '1';
+            skinSelector.style.visibility = 'visible';
         }
         
-        const ratingSelection = document.querySelector('.rating-selection');
-        if (ratingSelection) {
-            ratingSelection.style.opacity = '1';
-            ratingSelection.style.visibility = 'visible';
+        const ratingSelector = document.querySelector('.rating-selector');
+        if (ratingSelector) {
+            ratingSelector.style.opacity = '1';
+            ratingSelector.style.visibility = 'visible';
+        }
+    }
+    
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            if (themeToggle) themeToggle.textContent = '☀️';
+        } else {
+            document.body.classList.remove('light-theme');
+            if (themeToggle) themeToggle.textContent = '🌙';
+        }
+    }
+    
+    function toggleTheme() {
+        if (document.body.classList.contains('light-theme')) {
+            document.body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+            if (themeToggle) themeToggle.textContent = '🌙';
+        } else {
+            document.body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+            if (themeToggle) themeToggle.textContent = '☀️';
+        }
+    }
+    
+    async function loadSkinsData() {
+        try {
+            const response = await fetch('json/skins.json');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            skinsData = await response.json();
+            renderSkinsList();
+            updateSkinUI();
+            return skinsData;
+        } catch (error) {
+            console.error("Ошибка загрузки skins.json:", error);
+            skinsData = {
+                default: { name: 'Лосяш', image: 'losyash.png', unlockScore: 0 },
+                pin: { name: 'Пин', image: 'pin.png', unlockScore: 300 },
+                barash: { name: 'Бараш', image: 'barash.png', unlockScore: 500 },
+                karich: { name: 'Кар-Карыч', image: 'karich.png', unlockScore: 800 },
+                yozhik: { name: 'Ёжик', image: 'yozhik.png', unlockScore: 1200 }
+            };
+            renderSkinsList();
+            return skinsData;
+        }
+    }
+    
+    function updateSkinUI() {
+        if (skinsData[currentSkin]) {
+            const skinImg = skinLabelBtn?.querySelector('img');
+            if (skinImg) skinImg.src = `images/${skinsData[currentSkin].image}`;
+        }
+    }
+    
+    async function initGame() {
+        await loadSkinsData();
+        loadGameData();
+        renderSkinsList();
+        updateRatingDisplay();
+        initTheme();
+        
+        scoreManager.loadFromStorage();
+        bestScore = scoreManager.bestScore;
+        playerRecords = scoreManager.playerRecords;
+        
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
         }
     }
     
@@ -811,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (retryBtn) {
         retryBtn.addEventListener('click', () => {
-            if (gameOverlay) gameOverlay.classList.add('hidden');
+            if (gameOverlay) gameOverlay.classList.add('game-overlay--hidden');
             fullReset();
         });
     }
@@ -840,37 +1070,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pauseModal) pauseModal.addEventListener('click', (e) => {
         if (e.target === pauseModal) continueFromPause();
     });
-    function initTheme() {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'light') {
-            document.body.classList.add('light-theme');
-            const themeBtn = document.getElementById('themeToggle');
-            if (themeBtn) themeBtn.textContent = '☀️';
-        } else {
-            document.body.classList.remove('light-theme');
-            const themeBtn = document.getElementById('themeToggle');
-            if (themeBtn) themeBtn.textContent = '🌙';
-        }
-    }
-
-    function toggleTheme() {
-        const themeBtn = document.getElementById('themeToggle');
-        if (document.body.classList.contains('light-theme')) {
-            document.body.classList.remove('light-theme');
-            localStorage.setItem('theme', 'dark');
-            if (themeBtn) themeBtn.textContent = '🌙';
-        } else {
-            document.body.classList.add('light-theme');
-            localStorage.setItem('theme', 'light');
-            if (themeBtn) themeBtn.textContent = '☀️';
-        }
-    }
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-    }
-    initTheme();
-    loadGameData();
-    renderSkinsList();
-    updateRatingDisplay();
+    
+    initGame();
 });
