@@ -1,79 +1,65 @@
-@media (max-width: 600px) {
-    .menu-container {
-        padding: 25px 30px;
-    }
-    
-    .game-title {
-        font-size: 2.2rem;
-    }
-    
-    .menu-start-btn {
-        font-size: 1.3rem;
-        padding: 12px 25px;
-    }
-    
-    .skin-container {
-        grid-template-columns: repeat(auto-fit, minmax(75px, 1fr));
-        gap: 8px;
-    }
-    
-    .skin-emoji {
-        font-size: 1.8rem;
-    }
-    
-    .game-stats {
-        padding: 8px 12px;
-    }
-    
-    .stat-item {
-        font-size: 0.7rem;
-    }
-    
-    .gameover-popup {
-        padding: 20px 25px;
-    }
-    
-    .gameover-popup h2 {
-        font-size: 1.5rem;
-    }
-    
-    .skin-image {
-        width: 60px;
-        height: 60px;
-    }
-    
-    .skin-name {
-        font-size: 0.9rem;
-    }
+:root {
+    --bg-gradient-start: #0a0f2a;
+    --bg-gradient-end: #030617;
+    --menu-bg: rgba(0, 0, 0, 0.7);
+    --menu-border: rgba(255, 215, 0, 0.6);
+    --text-primary: #ffec80;
+    --text-secondary: #ddd;
+    --input-bg: rgba(255,255,255,0.15);
+    --input-border: rgba(255,215,0,0.5);
+    --input-focus: #ffd700;
+    --btn-gradient-start: #f0a500;
+    --btn-gradient-end: #ff6b35;
+    --btn-hover-start: #ffb520;
+    --btn-hover-end: #ff8040;
+    --game-bg-start: #010628;
+    --game-bg-end: #121730;
+    --stat-bg: rgba(0, 0, 0, 0.85);
+    --stat-text: #ffec80;
+    --stat-border: rgba(255,215,0,0.5);
+    --platform-green-start: #6eff9e;
+    --platform-green-end: #2ecc71;
+    --platform-red: #ff4444;
+    --danger-pulse: rgb(220, 40, 40);
+    --overlay-bg: rgba(0, 0, 0, 0.85);
+    --popup-bg: rgba(20, 20, 40, 0.95);
+    --popup-border: #ff5555;
+    --toast-bg: #ffcc44;
+    --toast-text: black;
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(255,215,0,0.3);
 }
 
-@media (max-width: 450px) {
-    .skin-container {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .game-stats {
-        padding: 5px 8px;
-    }
-    
-    .stat-item {
-        font-size: 0.6rem;
-    }
-    
-    .skin-image {
-        width: 50px;
-        height: 50px;
-    }
-}
-
-@media (min-width: 1200px) {
-    .game-stats {
-        padding: 15px 25px;
-    }
-    
-    .stat-item {
-        font-size: 1rem;
-    }
+body.light-theme {
+    --bg-gradient-start: #e8f0ff;
+    --bg-gradient-end: #c5d5f0;
+    --menu-bg: rgba(255, 255, 255, 0.85);
+    --menu-border: rgba(255, 165, 0, 0.6);
+    --text-primary: #ff8c00;
+    --text-secondary: #444;
+    --input-bg: rgba(0,0,0,0.05);
+    --input-border: rgba(255,165,0,0.5);
+    --input-focus: #ff8c00;
+    --btn-gradient-start: #ff8c00;
+    --btn-gradient-end: #ff6600;
+    --btn-hover-start: #ffa500;
+    --btn-hover-end: #ff7700;
+    --game-bg-start: #e0e8ff;
+    --game-bg-end: #b0c4f0;
+    --stat-bg: rgba(255, 255, 255, 0.85);
+    --stat-text: #ff8c00;
+    --stat-border: rgba(255,165,0,0.5);
+    --platform-green-start: #4caf50;
+    --platform-green-end: #388e3c;
+    --platform-red: #ff4444;
+    --danger-pulse: rgb(220, 60, 60);
+    --overlay-bg: rgba(255, 255, 255, 0.85);
+    --popup-bg: rgba(240, 240, 255, 0.95);
+    --popup-border: #ff5555;
+    --toast-bg: #ffa500;
+    --toast-text: white;
+    --scrollbar-track: rgba(0,0,0,0.05);
+    --scrollbar-thumb: rgba(255,165,0,0.3);
 }
 
 * {
@@ -86,9 +72,35 @@
 
 body {
     min-height: 100vh;
-    background: radial-gradient(circle at 20% 30%, #0a0f2a, #030617);
+    background: radial-gradient(circle at 20% 30%, var(--bg-gradient-start), var(--bg-gradient-end));
     font-family: 'Segoe UI', 'Poppins', 'Montserrat', system-ui, -apple-system, cursive;
     overflow: hidden;
+    transition: background 0.3s ease;
+}
+
+.theme-toggle-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--menu-bg);
+    backdrop-filter: blur(8px);
+    border: 2px solid var(--menu-border);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1002;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
 .main-menu {
@@ -117,27 +129,38 @@ body {
     filter: blur(8px); 
     -webkit-filter: blur(8px);
     z-index: -1; 
+    transition: opacity 0.3s ease;
+}
+
+body.light-theme .main-menu::before {
+    opacity: 0.5;
 }
 
 .menu-container {
     position: relative;
     z-index: 1;
     text-align: center;
-    background: rgba(0, 0, 0, 0.7);
+    background: var(--menu-bg);
     backdrop-filter: blur(20px);
     padding: 30px 40px;
     border-radius: 60px;
-    border: 2px solid rgba(255, 215, 0, 0.6);
+    border: 2px solid var(--menu-border);
     box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .menu-container::-webkit-scrollbar {
-    width: 0;
-    background: transparent;
+    width: 5px;
+    background: var(--scrollbar-track);
+}
+
+.menu-container::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 5px;
 }
 
 .game-title {
@@ -153,9 +176,10 @@ body {
 
 .game-subtitle {
     font-size: 0.9rem;
-    color: #ffec80;
+    color: var(--text-primary);
     margin-bottom: 20px;
     opacity: 0.9;
+    transition: color 0.3s ease;
 }
 
 .input-group {
@@ -164,29 +188,35 @@ body {
 }
 
 .input-group label {
-    color: #ffec80;
+    color: var(--text-primary);
     font-size: 0.9rem;
     display: block;
     margin-bottom: 8px;
+    transition: color 0.3s ease;
 }
 
 .name-input {
     width: 100%;
     padding: 10px 15px;
     font-size: 1rem;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,215,0,0.5);
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
     border-radius: 50px;
-    color: white;
+    color: var(--text-secondary);
     font-family: inherit;
     outline: none;
     transition: all 0.3s;
 }
 
 .name-input:focus {
-    border-color: #ffd700;
-    background: rgba(255,255,255,0.25);
+    border-color: var(--input-focus);
+    background: var(--input-bg);
     box-shadow: 0 0 15px rgba(255,215,0,0.3);
+}
+
+.name-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.5;
 }
 
 .skin-selection {
@@ -251,15 +281,16 @@ body {
 }
 
 .skin-modal-content {
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--menu-bg);
     backdrop-filter: blur(20px);
     border-radius: 40px;
-    border: 2px solid rgba(255, 215, 0, 0.6);
+    border: 2px solid var(--menu-border);
     padding: 25px;
     max-width: 500px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .skin-modal-header {
@@ -268,7 +299,7 @@ body {
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(255, 215, 0, 0.4);
+    border-bottom: 2px solid var(--menu-border);
 }
 
 .skin-modal-header h2 {
@@ -280,7 +311,7 @@ body {
 .close-modal {
     background: none;
     border: none;
-    color: white;
+    color: var(--text-secondary);
     font-size: 2rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -338,10 +369,11 @@ body {
 }
 
 .skin-name {
-    color: white;
+    color: var(--text-secondary);
     font-weight: bold;
     font-size: 0.9rem;
     margin: 8px 0 3px;
+    transition: color 0.3s ease;
 }
 
 .skin-status {
@@ -359,7 +391,7 @@ body {
 .menu-start-btn {
     font-size: 1.5rem;
     padding: 12px 30px;
-    background: linear-gradient(135deg, #f0a500, #ff6b35);
+    background: linear-gradient(135deg, var(--btn-gradient-start), var(--btn-gradient-end));
     color: white;
     border: none;
     border-radius: 60px;
@@ -375,15 +407,16 @@ body {
 .menu-start-btn:hover {
     transform: scale(1.02);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-    background: linear-gradient(135deg, #ffb520, #ff8040);
+    background: linear-gradient(135deg, var(--btn-hover-start), var(--btn-hover-end));
 }
 
 .menu-info {
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--input-bg);
     padding: 12px;
     border-radius: 30px;
-    color: #ddd;
+    color: var(--text-secondary);
     font-size: 0.75rem;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .menu-info p {
@@ -396,11 +429,12 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(circle at 20% 30%, #010628, #121730);
+    background: radial-gradient(circle at 20% 30%, var(--game-bg-start), var(--game-bg-end));
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 900;
+    transition: background 0.3s ease;
 }
 
 .game-screen.hidden {
@@ -442,23 +476,25 @@ canvas {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0, 0, 0, 0.85);
+    background: var(--stat-bg);
     backdrop-filter: blur(8px);
-    border-top: 2px solid rgba(255, 215, 0, 0.5);
+    border-top: 2px solid var(--stat-border);
     font-weight: bold;
     width: 100%;
     box-sizing: border-box;
     padding: 10px 15px;
     flex-shrink: 0;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .stat-item {
-    color: #ffec80;
+    color: var(--stat-text);
     text-shadow: 0 0 3px #ff9900;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 0.8rem;
+    transition: color 0.3s ease;
 }
 
 .stat-item:first-child {
@@ -482,13 +518,14 @@ canvas {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.85);
+    background: var(--overlay-bg);
     backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 100;
     border-radius: 36px;
+    transition: background 0.3s ease;
 }
 
 .game-overlay.hidden {
@@ -497,11 +534,12 @@ canvas {
 
 .gameover-popup {
     text-align: center;
-    background: rgba(20, 20, 40, 0.95);
+    background: var(--popup-bg);
     padding: 25px 35px;
     border-radius: 40px;
-    border: 2px solid #ff5555;
+    border: 2px solid var(--popup-border);
     box-shadow: 0 0 40px rgba(255, 0, 0, 0.3);
+    transition: background 0.3s ease;
 }
 
 .gameover-popup h2 {
@@ -511,9 +549,10 @@ canvas {
 }
 
 .gameover-popup p {
-    color: white;
+    color: var(--text-secondary);
     font-size: 1.2rem;
     margin-bottom: 20px;
+    transition: color 0.3s ease;
 }
 
 .overlay-btn {
@@ -560,14 +599,15 @@ canvas {
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: #ffcc44;
-    color: black;
+    background: var(--toast-bg);
+    color: var(--toast-text);
     padding: 10px 20px;
     border-radius: 50px;
     font-weight: bold;
     z-index: 3000;
     font-size: 0.9rem;
     white-space: nowrap;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .rating-selection {
@@ -632,15 +672,16 @@ canvas {
 }
 
 .rating-modal-content {
-    background: rgba(0, 0, 0, 0.9);
+    background: var(--menu-bg);
     backdrop-filter: blur(20px);
     border-radius: 40px;
-    border: 2px solid rgba(255, 215, 0, 0.6);
+    border: 2px solid var(--menu-border);
     padding: 30px;
     max-width: 500px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .rating-modal-header {
@@ -649,7 +690,7 @@ canvas {
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 15px;
-    border-bottom: 2px solid rgba(255, 215, 0, 0.4);
+    border-bottom: 2px solid var(--menu-border);
 }
 
 .rating-modal-header h2 {
@@ -696,7 +737,8 @@ canvas {
 .record-score {
     font-size: 1.3rem;
     font-weight: bold;
-    color: #ffec80;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
 }
 
 .record-date {
@@ -716,31 +758,6 @@ canvas {
     color: #aaa;
     padding: 40px;
     font-size: 1rem;
-}
-
-@media (max-width: 600px) {
-    .rating-selection {
-        bottom: 20px;
-        right: 20px;
-    }
-    
-    .rating-btn img {
-        width: 45px;
-        height: 45px;
-    }
-    
-    .record-rank {
-        font-size: 1.2rem;
-        min-width: 40px;
-    }
-    
-    .record-score {
-        font-size: 1rem;
-    }
-    
-    .record-date {
-        font-size: 0.6rem;
-    }
 }
 
 .pause-btn {
@@ -789,13 +806,14 @@ canvas {
 
 .pause-modal-content {
     text-align: center;
-    background: rgba(0, 0, 0, 0.95);
+    background: var(--menu-bg);
     backdrop-filter: blur(20px);
     padding: 40px 50px;
     border-radius: 60px;
-    border: 2px solid rgba(255, 215, 0, 0.6);
+    border: 2px solid var(--menu-border);
     box-shadow: 0 30px 50px rgba(0, 0, 0, 0.5);
     min-width: 300px;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .pause-modal-content h2 {
@@ -844,6 +862,37 @@ canvas {
 }
 
 @media (max-width: 600px) {
+    .theme-toggle-btn {
+        top: 10px;
+        right: 10px;
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+    
+    .rating-selection {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .rating-btn img {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .record-rank {
+        font-size: 1.2rem;
+        min-width: 40px;
+    }
+    
+    .record-score {
+        font-size: 1rem;
+    }
+    
+    .record-date {
+        font-size: 0.6rem;
+    }
+    
     .pause-btn {
         width: 35px;
         height: 35px;
@@ -859,5 +908,15 @@ canvas {
     
     .pause-modal-content h2 {
         font-size: 1.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .game-stats {
+        padding: 15px 25px;
+    }
+    
+    .stat-item {
+        font-size: 1rem;
     }
 }

@@ -840,7 +840,36 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pauseModal) pauseModal.addEventListener('click', (e) => {
         if (e.target === pauseModal) continueFromPause();
     });
-    
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            document.body.classList.add('light-theme');
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) themeBtn.textContent = '☀️';
+        } else {
+            document.body.classList.remove('light-theme');
+            const themeBtn = document.getElementById('themeToggle');
+            if (themeBtn) themeBtn.textContent = '🌙';
+        }
+    }
+
+    function toggleTheme() {
+        const themeBtn = document.getElementById('themeToggle');
+        if (document.body.classList.contains('light-theme')) {
+            document.body.classList.remove('light-theme');
+            localStorage.setItem('theme', 'dark');
+            if (themeBtn) themeBtn.textContent = '🌙';
+        } else {
+            document.body.classList.add('light-theme');
+            localStorage.setItem('theme', 'light');
+            if (themeBtn) themeBtn.textContent = '☀️';
+        }
+    }
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+    initTheme();
     loadGameData();
     renderSkinsList();
     updateRatingDisplay();
